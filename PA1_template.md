@@ -1,15 +1,11 @@
----
-title: "PA1_template"
-author: "Viktor Cirbus"
-date: "Thursday, December 11, 2014"
-output:
-  html_document:
-    keep_md: yes
----
+# PA1_template
+Viktor Cirbus  
+Thursday, December 11, 2014  
 
 Loading and preprocessing the data
 
-```{r}
+
+```r
 activity = read.csv("~/GitHub/RepData_PeerAssessment1/data/activity.csv", stringsAsFactors=FALSE)
 activity$date=as.Date(activity$date)
 ```
@@ -18,13 +14,15 @@ What is mean total number of steps taken per day?
 
 1.  Make a histogram of the total number of steps taken each day
 
-```{r}
+
+```r
 activity.sums = aggregate(activity[c("steps")], 
                            by = activity[c("date")],
                            FUN=sum, na.rm=TRUE)
 hist(activity.sums$steps, breaks = 50, main="histogram of the total number of steps taken each day",xlab="Total number of steps taken each day")
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png) 
 
 2.  Calculate and report the mean and median total number of steps taken per day
 
@@ -32,21 +30,32 @@ hist(activity.sums$steps, breaks = 50, main="histogram of the total number of st
 Mean number of steps:
 
 
-```{r}
+
+```r
 mean(activity.sums$steps, na.rm = TRUE)
+```
+
+```
+## [1] 9354.23
 ```
 
 Median number of steps:
 
-```{r}
+
+```r
 median(activity.sums$steps, na.rm = TRUE)
+```
+
+```
+## [1] 10395
 ```
 
 What is the average daily activity pattern?
 
 Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 
-```{r}
+
+```r
 activity.intervals = aggregate(activity[c("steps")], 
                            by = activity[c("interval")],
                            FUN=mean, na.rm=TRUE)
@@ -54,12 +63,19 @@ activity.intervals = aggregate(activity[c("steps")],
 plot(activity.intervals$interval,activity.intervals$steps,type="l")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
+
 
 Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
 
-```{r}
+
+```r
 activity.intervals[activity.intervals$steps == max(activity.intervals$steps), ]$interval
+```
+
+```
+## [1] 835
 ```
 
 Imputing missing values
@@ -69,8 +85,13 @@ Note that there are a number of days/intervals where there are missing values (c
 1.  Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
 
 
-```{r}
+
+```r
 length(which(is.na(activity$steps)))
+```
+
+```
+## [1] 2304
 ```
 
 2.  Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
@@ -78,7 +99,8 @@ length(which(is.na(activity$steps)))
 
 Mean for that 5-minute interval used as my strategy for missing values imputation:
 
-```{r}
+
+```r
 for(i in 1:nrow(activity)){
   activity[i,c("imputed")]=ifelse(is.na(activity[i,c("steps")]),activity.intervals[activity.intervals$interval==activity[i,c("interval")],]$steps,activity[i,c("steps")])
 }
@@ -88,7 +110,8 @@ for(i in 1:nrow(activity)){
 Create a new dataset that is equal to the original dataset but with the missing data filled in.
 
 
-```{r}
+
+```r
 activity2=activity[,c("imputed","date","interval")]
 colnames(activity2)[1] = "steps"
 ```
@@ -100,7 +123,8 @@ total number of steps taken per day. Do these values differ from the estimates f
 What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
 
-```{r}
+
+```r
 activity2.sums = aggregate(activity2[c("steps")], 
                           by = activity2[c("date")],
                           FUN=sum)
@@ -108,18 +132,30 @@ activity2.sums = aggregate(activity2[c("steps")],
 hist(activity2.sums$steps, breaks = 50, main="histogram of the total number of steps taken each day after imputation",xlab="Total number of steps taken each day after imputation")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-10-1.png) 
+
 
 Mean number of steps:
 
 
-```{r}
+
+```r
 mean(activity2.sums$steps)
+```
+
+```
+## [1] 10766.19
 ```
 
 Median number of steps:
 
-```{r}
+
+```r
 median(activity2.sums$steps)
+```
+
+```
+## [1] 10766.19
 ```
 
 Both the mean and the median are higher after using the imputed values in comparison to the original data set.
@@ -132,7 +168,8 @@ For this part the weekdays() function may be of some help here. Use the dataset 
 
 1.  Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
 
-```{r}
+
+```r
 for(i in 1:nrow(activity2)){
   activity2[i,c("datetype")]=ifelse(as.POSIXlt(activity2[i,c("date")])$wday == 6,"weekend",ifelse(as.POSIXlt(activity2[i,c("date")])$wday == 7,"weekend","weekday"))
 }
@@ -144,7 +181,8 @@ activity2$datetype=as.factor(activity2$datetype)
 2.  Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken,averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
 
 
-```{r}
+
+```r
 activity2.datetype = aggregate(activity2[c("steps")], 
                            by = activity2[c("interval","datetype")],
                            FUN=mean)
@@ -152,5 +190,7 @@ library(ggplot2)
 ggplot(data = activity2.datetype, aes(x = interval, y = steps, color = datetype)) + 
   geom_line() + facet_wrap(~datetype, ncol = 1) + ylab("average number of steps taken")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-14-1.png) 
 
 
